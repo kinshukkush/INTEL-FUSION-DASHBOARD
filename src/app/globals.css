@@ -1,26 +1,42 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "leaflet/dist/leaflet.css";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-intel-bg-primary: #0a0a0f;
+  --color-intel-bg-secondary: #12121a;
+  --color-intel-glass: rgba(18, 18, 26, 0.7);
+  --color-intel-glass-border: rgba(255, 255, 255, 0.08);
+  --color-intel-text-primary: #e4e4e7;
+  --color-intel-text-secondary: #71717a;
+  --color-intel-osint: #3b82f6;
+  --color-intel-humint: #10b981;
+  --color-intel-imint: #ef4444;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #0a0a0f;
+  --foreground: #e4e4e7;
 }
 
-body {
+html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background-color: #0a0a0f !important;
 }
