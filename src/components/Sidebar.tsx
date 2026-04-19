@@ -44,11 +44,13 @@ export default function Sidebar() {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="fixed left-0 top-0 h-full w-[320px] bg-intel-glass bg-opacity-70 backdrop-blur-md border-r border-intel-glass-border z-50 text-intel-text-primary flex flex-col shadow-2xl"
         >
-          {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-intel-glass-border">
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-intel-osint via-intel-humint to-intel-imint">
-              Intel Dashboard
-            </h2>
+            <div className="flex items-center gap-2">
+              <img src="/logo.svg" alt="Intelligence Logo" className="w-6 h-6 drop-shadow-lg" />
+              <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-intel-osint via-intel-humint to-intel-imint">
+                Intel Dashboard
+              </h2>
+            </div>
             <button
               onClick={() => dispatch({ type: "TOGGLE_SIDEBAR" })}
               className="p-1 hover:bg-white/10 rounded-md transition-colors"

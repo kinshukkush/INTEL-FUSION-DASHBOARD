@@ -16,9 +16,47 @@
 
 ---
 
-## ⚡ Overview
+## ⚡ Overview & What This Is About
 
-The **Multi-Source Intelligence Dashboard** translates raw `JSON` and `CSV` coordinates natively across a completely custom dark glassmorphism layout securely leveraging Next.js. Engineered explicitly to parse unconfigured, disconnected OSINT / HUMINT / IMINT data sets in entirely local ecosystems.
+The **Multi-Source Intelligence Dashboard** is a highly specialized, autonomous frontend application built for geographic data analysis. 
+This dashboard acts as an "offline-capable" fusion center where analysts, journalists, or intelligence operators can visualize fragmented OSINT (Open Source), HUMINT (Human Intelligence), and IMINT (Imagery) coordinates directly on a full-screen dynamic world map.
+
+Instead of relying on backend databases, the dashboard runs localized ingestion algorithms. By simply dragging and dropping your own `.json` or `.csv` files into the Sidebar's Dropzone, the system instantly transforms massive arrays of tabular coordinates into grouped, color-coded interactive SVG markers across the Leaflet grid, while preserving performance up to thousands of data points utilizing `react-leaflet-cluster`. 
+
+## 📂 Sample Mock Data 
+
+Want to test the Drag and Drop zone immediately? Save either of these snippets into a local file and drop them into the sidebar!
+
+### 1. JSON Sample (`intel-drop.json`)
+```json
+[
+  {
+    "id": "osint-sample-1",
+    "lat": 38.8951,
+    "lng": -77.0364,
+    "type": "OSINT",
+    "title": "Public Sector Leak",
+    "description": "Information aggregation suggesting a localized digital security event."
+  },
+  {
+    "id": "humint-sample-2",
+    "lat": 51.5074,
+    "lng": -0.1278,
+    "type": "HUMINT",
+    "title": "Asset Rendezvous",
+    "description": "Ground contact successfully acquired package outside safehouse perimeter."
+  }
+]
+```
+
+### 2. CSV Sample (`intel-drop.csv`)
+If your organization exports data via spreadsheets, simply drop a `.csv`:
+```csv
+id,lat,lng,type,title,description
+im-1,48.8566,2.3522,IMINT,Satellite Sweep Alpha,UAV capture showcasing perimeter fence breach.
+os-3,35.6762,139.6503,OSINT,Regional Outage,Local broadcast confirms sweeping network disruption.
+hu-9,-33.8688,151.2093,HUMINT,Convoy Movement,Asset visualizes armored transport departing facility.
+```
 
 ## ✨ Features
 
