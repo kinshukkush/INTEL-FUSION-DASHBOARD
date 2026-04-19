@@ -22,6 +22,11 @@
 <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square" />
 <img src="https://img.shields.io/badge/Platform-Web-blue?style=flat-square" />
 <img src="https://img.shields.io/badge/Made%20with-❤️-red?style=flat-square" />
+<img src="https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=flat-square&logo=vercel" />
+
+<br/><br/>
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkinshukkush%2FINTEL-FUSION-DASHBOARD)
 
 </div>
 
@@ -181,26 +186,41 @@ The dashboard ships with pre-loaded intelligence markers across India:
 
 ## 🚀 Quick Start
 
-### 1. Clone
+### Option A — Deploy to Vercel (One Click)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkinshukkush%2FINTEL-FUSION-DASHBOARD)
+
+> No configuration needed. Vercel auto-detects Next.js and deploys in ~60 seconds.
+
+### Option B — Run Locally
+
+#### 1. Clone
 
 ```bash
 git clone https://github.com/kinshukkush/INTEL-FUSION-DASHBOARD.git
 cd INTEL-FUSION-DASHBOARD
 ```
 
-### 2. Install
+#### 2. Install
 
 ```bash
 npm install
 ```
 
-### 3. Run Dev Server
+#### 3. Run Dev Server
 
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) 🚀
+
+#### 4. Build for Production
+
+```bash
+npm run build
+npm run start
+```
 
 ---
 
@@ -224,9 +244,11 @@ Open [http://localhost:3000](http://localhost:3000) 🚀
 - Press **Esc** or click outside to return to browse mode
 
 ### Ingesting Your Own Data
-1. Scroll to the **INGEST INTELLIGENCE** dropzone at the bottom of the sidebar
-2. Drag & drop a `.json` or `.csv` file formatted like the samples below
-3. A success animation shows how many records were added
+1. Click the **INGEST DATA** accordion at the bottom of the sidebar
+2. **Tab 1 — Drop / Browse**: Drag & drop a `.json` or `.csv` file, or click to browse
+3. **Tab 2 — Paste Text**: Paste raw JSON array or CSV text directly into the text box, then click **⚡ INGEST PASTED DATA**
+4. A green success banner shows how many records were added
+5. The new markers appear on the map instantly
 
 ---
 
@@ -292,6 +314,52 @@ lpu-csv-1,31.2518,75.7057,OSINT,LPU Network Anomaly,DNS poisoning attempt detect
 | `hud-flicker` | HUD text occasional flicker (5s) |
 | `border-glow` | Panel border cycles OSINT→HUMINT→IMINT (6s) |
 | `scanline` | CRT grid overlay on glass panel |
+
+---
+
+## 🏛️ System Architecture
+
+The application is built entirely on the frontend — no backend, no database, no API keys required. All data processing happens client-side in the browser using React context and reducers.
+
+```mermaid
+graph TD;
+    A["🗃️ IntelContext — useReducer"] -->|intelData array| B["🗺️ MapComponent — Leaflet"];
+    A -->|filteredData| C["📋 Sidebar Intel List"];
+    A -->|stats counts| D["📊 GSAP Stat Cards"];
+    A -->|activeFilter| E["🔘 Filter Pills"];
+    A -->|flyToLocation| F["✈️ FlyTo Handler"];
+
+    G["📁 DropzoneSection"] -->|file drop| H["⚙️ PapaParse / JSON.parse"];
+    I["📋 Paste Text Tab"] -->|raw text| H;
+    H -->|SET_DATA dispatch| A;
+
+    J["🔍 Search Input"] -->|query string| C;
+    E -->|SET_FILTER dispatch| A;
+    C -->|FLY_TO dispatch| A;
+    F -->|map.flyTo| B;
+
+    K["🛰️ FAB Button"] -->|SET_SIDEBAR true| L["🪟 Floating Sidebar Panel"];
+    L -->|AnimatePresence| L;
+    M["🖱️ Backdrop Click"] -->|SET_SIDEBAR false| L;
+
+    B -->|Marker Click| N["💬 Dark Glass Popup"];
+    N -->|confidence bar| N;
+    N -->|image preview| N;
+```
+
+### Data Flow Explained
+
+1. **IntelContext (Central Store)**: Acts as the single source of truth using React's `useReducer`. All components read from and dispatch to this store — no prop drilling, no external state library needed.
+
+2. **Ingest Pipeline**: Data enters the system via two routes:
+   - **File Drop / Browse** — `react-dropzone` captures files → `FileReader` reads text → `PapaParse` (CSV) or `JSON.parse` (JSON) → validated records dispatched to store.
+   - **Paste Text** — User pastes raw JSON or CSV directly into a `<textarea>` → auto-detected format → same parser pipeline.
+
+3. **Map Layer**: `MapComponent` subscribes to `intelData` and renders `react-leaflet-cluster` markers. On list item click, `FLY_TO` action fires, the `FlyToHandler` sub-component calls `map.flyTo()` with smooth easing.
+
+4. **Sidebar Panel**: `Framer Motion AnimatePresence` handles the spring mount/unmount. `GSAP` animates the stat card numbers on every open. `AnimatePresence mode="popLayout"` staggers intel list items.
+
+5. **No Persistence**: Data resets on page refresh by design — this is an ephemeral analysis tool. Drag a file or paste data to hydrate the session.
 
 ---
 

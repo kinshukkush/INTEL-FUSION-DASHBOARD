@@ -162,64 +162,108 @@ function IntelListItem({
 function DropzoneSection({ onDataLoaded }: { onDataLoaded: (data: IntelData[]) => void }) {
   const { state } = useIntel();
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<"file" | "paste">("file");
   const [success, setSuccess] = useState(0);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteError, setPasteError] = useState("");
 
+  // ── Shared parser ──────────────────────────────────────────────────────────
+  const parseText = useCallback(
+    (text: string, hint: "json" | "csv" | "auto") => {
+      const isJson =
+        hint === "json" ||
+        (hint === "auto" && text.trimStart().startsWith("[") || text.trimStart().startsWith("{"));
+
+      if (isJson) {
+        try {
+          const parsed = JSON.parse(text);
+          const arr: IntelData[] = Array.isArray(parsed) ? parsed : [parsed];
+          const valid = arr.filter((d: any) => d.lat && d.lng && d.type);
+          if (valid.length === 0) { setPasteError("No valid records found (need lat, lng, type)."); return; }
+          onDataLoaded([...state.intelData, ...valid]);
+          setSuccess(valid.length);
+          setPasteError("");
+          setTimeout(() => setSuccess(0), 3000);
+        } catch {
+          setPasteError("Invalid JSON. Check your format.");
+        }
+      } else {
+        Papa.parse<any>(text, {
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true,
+          complete: (res) => {
+            const valid = res.data
+              .map((r: any) => ({
+                id: r.id || Math.random().toString(36).slice(2),
+                lat: parseFloat(r.lat),
+                lng: parseFloat(r.lng),
+                type: (r.type || "OSINT").toUpperCase(),
+                title: r.title || "Unknown",
+                description: r.description || "",
+                imageUrl: r.imageUrl || r.image,
+                confidence: parseInt(r.confidence) || 70,
+                timestamp: r.timestamp || new Date().toISOString(),
+                source: r.source || "Paste",
+              }))
+              .filter((d: any) => !isNaN(d.lat) && !isNaN(d.lng));
+            if (valid.length === 0) { setPasteError("No valid rows found (need lat, lng, type columns)."); return; }
+            onDataLoaded([...state.intelData, ...valid]);
+            setSuccess(valid.length);
+            setPasteError("");
+            setTimeout(() => setSuccess(0), 3000);
+          },
+        });
+      }
+    },
+    [state.intelData, onDataLoaded]
+  );
+
+  // ── File drop handler ──────────────────────────────────────────────────────
   const onDrop = useCallback(
     (files: File[]) => {
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = () => {
           const text = reader.result as string;
-          if (file.name.endsWith(".json")) {
-            try {
-              const parsed = JSON.parse(text);
-              const arr: IntelData[] = Array.isArray(parsed) ? parsed : [parsed];
-              const valid = arr.filter((d: any) => d.lat && d.lng && d.type);
-              onDataLoaded([...state.intelData, ...valid]);
-              setSuccess(valid.length);
-              setTimeout(() => setSuccess(0), 3000);
-            } catch {}
-          } else {
-            Papa.parse<any>(text, {
-              header: true,
-              dynamicTyping: true,
-              skipEmptyLines: true,
-              complete: (res) => {
-                const valid = res.data
-                  .map((r: any) => ({
-                    id: r.id || Math.random().toString(36).slice(2),
-                    lat: parseFloat(r.lat),
-                    lng: parseFloat(r.lng),
-                    type: (r.type || "OSINT").toUpperCase(),
-                    title: r.title || "Unknown",
-                    description: r.description || "",
-                    imageUrl: r.imageUrl || r.image,
-                    confidence: parseInt(r.confidence) || 70,
-                    timestamp: r.timestamp || new Date().toISOString(),
-                    source: r.source || "Upload",
-                  }))
-                  .filter((d: any) => !isNaN(d.lat) && !isNaN(d.lng));
-                onDataLoaded([...state.intelData, ...valid]);
-                setSuccess(valid.length);
-                setTimeout(() => setSuccess(0), 3000);
-              },
-            });
-          }
+          parseText(text, file.name.endsWith(".json") ? "json" : "csv");
         };
         reader.readAsText(file);
       });
     },
-    [state.intelData, onDataLoaded]
+    [parseText]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "application/json": [".json"], "text/csv": [".csv"] },
     maxSize: 5 * 1024 * 1024,
+    noClick: false,
   });
+
+  const handlePasteIngest = () => {
+    if (!pasteText.trim()) { setPasteError("Please paste some data first."); return; }
+    parseText(pasteText, "auto");
+  };
+
+  const TAB_BTN = (id: "file" | "paste", label: string) => (
+    <button
+      key={id}
+      onClick={() => { setTab(id); setPasteError(""); setSuccess(0); }}
+      className="flex-1 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded-lg transition-all"
+      style={{
+        background: tab === id ? "rgba(59,130,246,0.15)" : "transparent",
+        color: tab === id ? "#3b82f6" : "rgba(255,255,255,0.3)",
+        border: `1px solid ${tab === id ? "rgba(59,130,246,0.4)" : "rgba(255,255,255,0.07)"}`,
+      }}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div>
+      {/* ── Accordion Toggle ── */}
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wider btn-hover transition-all"
@@ -231,7 +275,7 @@ function DropzoneSection({ onDataLoaded }: { onDataLoaded: (data: IntelData[]) =
       >
         <div className="flex items-center gap-2">
           <UploadCloud size={14} />
-          <span>UPLOAD DATA</span>
+          <span>INGEST DATA</span>
         </div>
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </button>
@@ -245,39 +289,136 @@ function DropzoneSection({ onDataLoaded }: { onDataLoaded: (data: IntelData[]) =
             transition={{ duration: 0.25 }}
             style={{ overflow: "hidden" }}
           >
-            <div className="pt-2">
-              <motion.div
-                {...(getRootProps() as any)}
-                whileHover={{ scale: 1.01 }}
-                className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl cursor-pointer transition-all text-center"
-                style={{
-                  border: `1.5px dashed ${isDragActive ? "rgba(59,130,246,0.7)" : "rgba(255,255,255,0.12)"}`,
-                  background: isDragActive ? "rgba(59,130,246,0.06)" : "rgba(255,255,255,0.02)",
-                  minHeight: 110,
-                }}
-              >
-                <input {...getInputProps()} />
-                {success > 0 ? (
-                  <>
-                    <CheckCircle2 size={22} className="text-green-400" />
-                    <p className="text-xs font-bold text-green-400 font-mono">+{success} RECORDS INGESTED</p>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex gap-3">
-                      <FileJson size={18} className={isDragActive ? "text-blue-400" : "text-white/30"} />
-                      <UploadCloud size={22} className={isDragActive ? "text-blue-400" : "text-white/40"} />
-                      <FileSpreadsheet size={18} className={isDragActive ? "text-blue-400" : "text-white/30"} />
-                    </div>
-                    <p className="text-xs font-medium" style={{ color: isDragActive ? "#3b82f6" : "rgba(255,255,255,0.3)" }}>
-                      {isDragActive ? "Release to ingest intel" : "Drop .json or .csv files here"}
-                    </p>
-                    <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.15)" }}>
-                      MAX 5MB · JSON · CSV
-                    </p>
-                  </>
+            <div className="pt-2 space-y-2">
+              {/* ── Tab Switcher ── */}
+              <div className="flex gap-1.5">
+                {TAB_BTN("file", "📁 Drop / Browse")}
+                {TAB_BTN("paste", "📋 Paste Text")}
+              </div>
+
+              {/* ── Success Banner ── */}
+              <AnimatePresence>
+                {success > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                    style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)" }}
+                  >
+                    <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
+                    <span className="text-xs font-bold text-green-400 font-mono">
+                      +{success} RECORDS INGESTED SUCCESSFULLY
+                    </span>
+                  </motion.div>
                 )}
-              </motion.div>
+              </AnimatePresence>
+
+              {/* ── Error Banner ── */}
+              <AnimatePresence>
+                {pasteError && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[10px] font-mono px-2"
+                    style={{ color: "#ef4444" }}
+                  >
+                    ⚠ {pasteError}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+
+              {/* ── TAB: FILE DROP ── */}
+              <AnimatePresence mode="wait">
+                {tab === "file" && (
+                  <motion.div
+                    key="file-tab"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 8 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <motion.div
+                      {...(getRootProps() as any)}
+                      whileHover={{ scale: 1.01 }}
+                      className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl cursor-pointer transition-all text-center"
+                      style={{
+                        border: `1.5px dashed ${isDragActive ? "rgba(59,130,246,0.7)" : "rgba(255,255,255,0.12)"}`,
+                        background: isDragActive ? "rgba(59,130,246,0.06)" : "rgba(255,255,255,0.02)",
+                        minHeight: 104,
+                      }}
+                    >
+                      <input {...getInputProps()} />
+                      <div className="flex gap-3">
+                        <FileJson size={18} className={isDragActive ? "text-blue-400" : "text-white/30"} />
+                        <UploadCloud size={22} className={isDragActive ? "text-blue-400" : "text-white/40"} />
+                        <FileSpreadsheet size={18} className={isDragActive ? "text-blue-400" : "text-white/30"} />
+                      </div>
+                      <p className="text-xs font-medium" style={{ color: isDragActive ? "#3b82f6" : "rgba(255,255,255,0.35)" }}>
+                        {isDragActive ? "Release to ingest intel" : "Drag & drop or click to browse"}
+                      </p>
+                      <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.15)" }}>
+                        MAX 5MB · .JSON · .CSV
+                      </p>
+                    </motion.div>
+                  </motion.div>
+                )}
+
+                {/* ── TAB: PASTE TEXT ── */}
+                {tab === "paste" && (
+                  <motion.div
+                    key="paste-tab"
+                    initial={{ opacity: 0, x: 8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    transition={{ duration: 0.15 }}
+                    className="space-y-2"
+                  >
+                    <textarea
+                      value={pasteText}
+                      onChange={(e) => { setPasteText(e.target.value); setPasteError(""); }}
+                      placeholder={`Paste JSON array or CSV text here…\n\nJSON example:\n[{"id":"1","lat":28.61,"lng":77.20,"type":"OSINT","title":"Test","description":"...","confidence":80}]\n\nCSV example:\nid,lat,lng,type,title,description\n1,28.61,77.20,OSINT,Test,Description`}
+                      rows={7}
+                      className="w-full rounded-xl resize-none text-[11px] font-mono focus:outline-none transition-all custom-scrollbar placeholder:text-white/15"
+                      style={{
+                        background: "rgba(255,255,255,0.03)",
+                        border: pasteError
+                          ? "1px solid rgba(239,68,68,0.5)"
+                          : pasteText
+                          ? "1px solid rgba(59,130,246,0.4)"
+                          : "1px solid rgba(255,255,255,0.09)",
+                        color: "rgba(255,255,255,0.75)",
+                        padding: "10px 12px",
+                        lineHeight: 1.6,
+                      }}
+                    />
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handlePasteIngest}
+                      disabled={!pasteText.trim()}
+                      className="w-full py-2.5 rounded-xl text-xs font-bold tracking-widest uppercase transition-all"
+                      style={{
+                        background: pasteText.trim()
+                          ? "linear-gradient(135deg, rgba(29,78,216,0.8), rgba(59,130,246,0.8))"
+                          : "rgba(255,255,255,0.04)",
+                        border: pasteText.trim()
+                          ? "1px solid rgba(59,130,246,0.5)"
+                          : "1px solid rgba(255,255,255,0.07)",
+                        color: pasteText.trim() ? "#fff" : "rgba(255,255,255,0.2)",
+                        cursor: pasteText.trim() ? "pointer" : "not-allowed",
+                        boxShadow: pasteText.trim() ? "0 0 20px rgba(59,130,246,0.2)" : "none",
+                      }}
+                    >
+                      ⚡ INGEST PASTED DATA
+                    </motion.button>
+                    <p className="text-[9px] font-mono text-center" style={{ color: "rgba(255,255,255,0.15)" }}>
+                      AUTO-DETECTED · JSON · CSV · MAX 5MB
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
