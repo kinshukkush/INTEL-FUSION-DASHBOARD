@@ -1,20 +1,21 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import { IntelData, mockIntelData } from "@/lib/mockData";
 
 // State structure
 export interface IntelState {
   sidebarOpen: boolean;
   flyToLocation: [number, number] | null;
   activeFilter: "ALL" | "OSINT" | "HUMINT" | "IMINT";
-  intelData: any[];
+  intelData: IntelData[];
 }
 
 const initialState: IntelState = {
   sidebarOpen: true,
   flyToLocation: null,
   activeFilter: "ALL",
-  intelData: [],
+  intelData: mockIntelData,
 };
 
 // Actions
@@ -23,7 +24,8 @@ export type IntelAction =
   | { type: "SET_SIDEBAR"; payload: boolean }
   | { type: "FLY_TO"; payload: [number, number] | null }
   | { type: "SET_FILTER"; payload: IntelState["activeFilter"] }
-  | { type: "SET_DATA"; payload: any[] };
+  | { type: "SET_DATA"; payload: IntelData[] };
+
 
 // Reducer
 function intelReducer(state: IntelState, action: IntelAction): IntelState {
