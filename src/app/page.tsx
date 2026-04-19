@@ -13,7 +13,7 @@ const MapArea = dynamic(() => import("@/components/MapArea"), { ssr: false });
 function DashboardWithContext() {
   const { dispatch } = useIntel();
 
-  /** Auto-sync from MongoDB on every mount */
+  /** Auto-sync from MongoDB on mount — fails silently, keeps mock data on error */
   useEffect(() => {
     const sync = async () => {
       dispatch({ type: "SET_DB_STATUS", payload: { status: "loading" } });
@@ -22,16 +22,17 @@ function DashboardWithContext() {
         const json = await res.json();
         if (json.success && json.data?.length > 0) {
           dispatch({ type: "APPEND_DATA", payload: json.data });
-          dispatch({
-            type: "SET_DB_STATUS",
-            payload: { status: "synced", count: json.count },
-          });
-        } else {
-          // No data in DB yet — keep mock data, set status to let user know
+          dispatch({ type: "SET_DB_STATUS", payload: { status: "synced", count: json.count } });
+        } else if (json.success) {
+          // Connected but empty — no data seeded yet
           dispatch({ type: "SET_DB_STATUS", payload: { status: "synced", count: 0 } });
+        } else {
+          // API returned error (IP block, missing URI, etc.) — fail silently, keep mock data
+          dispatch({ type: "SET_DB_STATUS", payload: { status: "idle" } });
         }
       } catch {
-        dispatch({ type: "SET_DB_STATUS", payload: { status: "error" } });
+        // Network/fetch error — fail silently, keep mock data visible
+        dispatch({ type: "SET_DB_STATUS", payload: { status: "idle" } });
       }
     };
     sync();

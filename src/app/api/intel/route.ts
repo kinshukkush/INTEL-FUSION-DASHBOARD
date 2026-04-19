@@ -11,7 +11,6 @@ export async function GET() {
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Strip MongoDB _id (ObjectId is not serialisable to JSON)
     const data = docs.map(({ _id, ...rest }) => rest);
 
     return NextResponse.json(
@@ -19,25 +18,37 @@ export async function GET() {
       { status: 200 }
     );
   } catch (err) {
-    console.error("[GET /api/intel]", err);
+    const msg = String(err);
+    const isIPBlock =
+      msg.includes("Could not connect") ||
+      msg.includes("ECONNREFUSED") ||
+      msg.includes("getaddrinfo") ||
+      msg.includes("timed out") ||
+      msg.includes("not defined");
+
+    console.error("[GET /api/intel]", msg);
+
     return NextResponse.json(
-      { success: false, error: String(err), data: [] },
+      {
+        success: false,
+        data: [],
+        error: isIPBlock
+          ? "MongoDB Atlas connection failed. Make sure MONGODB_URI is set in .env.local and your IP is whitelisted in Atlas Network Access."
+          : msg,
+      },
       { status: 500 }
     );
   }
 }
 
-/** POST /api/intel — Insert one or many intel records into MongoDB */
+/** POST /api/intel — Insert one or many intel records */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const records = Array.isArray(body) ? body : [body];
 
-    if (records.length === 0) {
-      return NextResponse.json(
-        { success: false, error: "No records provided." },
-        { status: 400 }
-      );
+    if (!records.length) {
+      return NextResponse.json({ success: false, error: "No records." }, { status: 400 });
     }
 
     const stamped = records.map((r) => ({
@@ -46,36 +57,22 @@ export async function POST(req: NextRequest) {
     }));
 
     const db = await getDb();
-    const result = await db
-      .collection("intel_reports")
-      .insertMany(stamped, { ordered: false });
+    const result = await db.collection("intel_reports").insertMany(stamped, { ordered: false });
 
-    return NextResponse.json(
-      { success: true, inserted: result.insertedCount },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, inserted: result.insertedCount }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/intel]", err);
-    return NextResponse.json(
-      { success: false, error: String(err) },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
   }
 }
 
-/** DELETE /api/intel — Clear all intel records (dev/reset use) */
+/** DELETE /api/intel — Clear all records */
 export async function DELETE() {
   try {
     const db = await getDb();
     const result = await db.collection("intel_reports").deleteMany({});
-    return NextResponse.json(
-      { success: true, deleted: result.deletedCount },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, deleted: result.deletedCount }, { status: 200 });
   } catch (err) {
-    return NextResponse.json(
-      { success: false, error: String(err) },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
   }
 }

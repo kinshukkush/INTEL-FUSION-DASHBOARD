@@ -1,35 +1,43 @@
 import { MongoClient, Db } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || "intel_fusion";
 
-if (!MONGODB_URI) {
-  throw new Error(
-    "Please define MONGODB_URI in .env.local or Vercel Environment Variables."
-  );
-}
+// ── Connection options: 5s timeout so Vercel doesn't hang on unconfigured Atlas ──
+const OPTIONS = {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 5000,
+  socketTimeoutMS: 10000,
+};
 
-// Global singleton to prevent too many connections in dev (hot reload)
 declare global {
   // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
+function createClient(): Promise<MongoClient> {
+  if (!MONGODB_URI) {
+    return Promise.reject(
+      new Error("MONGODB_URI is not defined. Add it to .env.local or Vercel Environment Variables.")
+    );
+  }
+  const client = new MongoClient(MONGODB_URI, OPTIONS);
+  return client.connect();
+}
+
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === "development") {
+  // Reuse across hot-reloads in dev
   if (!global._mongoClientPromise) {
-    const client = new MongoClient(MONGODB_URI);
-    global._mongoClientPromise = client.connect();
+    global._mongoClientPromise = createClient();
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // In production, always create a fresh connection per cold start
-  const client = new MongoClient(MONGODB_URI);
-  clientPromise = client.connect();
+  clientPromise = createClient();
 }
 
-/** Returns the intel_fusion database */
+/** Returns the intel_fusion database — throws if connection fails */
 export async function getDb(): Promise<Db> {
   const client = await clientPromise;
   return client.db(MONGODB_DB);

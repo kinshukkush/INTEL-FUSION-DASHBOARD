@@ -136,17 +136,21 @@ function MongoDBPanel() {
 
   const handleSync = async () => {
     dispatch({ type: "SET_DB_STATUS", payload: { status: "loading" } });
+    setSeedMsg("");
     try {
       const res = await fetch("/api/intel");
       const json = await res.json();
       if (json.success) {
         if (json.data?.length > 0) dispatch({ type: "APPEND_DATA", payload: json.data });
         dispatch({ type: "SET_DB_STATUS", payload: { status: "synced", count: json.count } });
+        setSeedMsg(json.count === 0 ? "✓ Connected — no records yet. Click SEED to populate." : "");
       } else {
         dispatch({ type: "SET_DB_STATUS", payload: { status: "error" } });
+        setSeedMsg(`✕ ${json.error ?? "Connection failed"}`);
       }
     } catch {
       dispatch({ type: "SET_DB_STATUS", payload: { status: "error" } });
+      setSeedMsg("✕ Network error — check your connection.");
     }
   };
 
@@ -208,10 +212,22 @@ function MongoDBPanel() {
       </div>
 
       {state.dbStatus === "error" && (
-        <div className="flex items-center gap-2 text-[10px] font-mono px-2 py-1.5 rounded-lg"
-          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444" }}>
-          <AlertCircle size={11} />
-          Connection failed. Check MONGODB_URI in .env.local
+        <div className="space-y-1.5 px-2 py-2 rounded-lg"
+          style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.18)" }}>
+          <p className="text-[10px] font-bold text-red-400 font-mono flex items-center gap-1.5">
+            <AlertCircle size={11} /> MONGODB CONNECTION FAILED
+          </p>
+          <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+            Fix: In MongoDB Atlas → <strong style={{color:"#f59e0b"}}>Network Access</strong> → Add IP <strong style={{color:"#f59e0b"}}>0.0.0.0/0</strong> (Allow from anywhere)
+          </p>
+          <a
+            href="https://cloud.mongodb.com/v2#/org/network-access"
+            target="_blank" rel="noopener noreferrer"
+            className="text-[9px] font-mono underline"
+            style={{ color: "#3b82f6" }}
+          >
+            → Open Atlas Network Access ↗
+          </a>
         </div>
       )}
 
