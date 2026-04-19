@@ -1,27 +1,36 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useIntel } from "@/context/IntelContext";
-import { Menu } from "lucide-react";
 
 const MapComponent = dynamic(() => import("./MapComponent"), { ssr: false });
 
 export default function MapArea() {
-  const { state, dispatch } = useIntel();
-
   return (
-    <div className="w-full h-screen relative bg-intel-bg-primary">
-      {!state.sidebarOpen && (
-        <button
-          onClick={() => dispatch({ type: "TOGGLE_SIDEBAR" })}
-          className="absolute top-4 left-4 z-[400] p-3 bg-intel-glass backdrop-blur-md border border-intel-glass-border text-white rounded-md shadow-lg hover:bg-white/10 transition-colors"
-        >
-          <Menu size={24} />
-        </button>
-      )}
-
+    <div className="absolute inset-0 w-full h-full z-0">
       <MapComponent />
-      <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] z-[200]"></div>
+      {/* Vignette overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[200]"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%)",
+        }}
+      />
+      {/* Top + bottom fade bars */}
+      <div
+        className="absolute top-0 left-0 right-0 h-16 pointer-events-none z-[200]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(10,10,15,0.7) 0%, transparent 100%)",
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none z-[200]"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(10,10,15,0.5) 0%, transparent 100%)",
+        }}
+      />
     </div>
   );
 }

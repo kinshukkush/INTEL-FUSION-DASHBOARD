@@ -4,7 +4,7 @@
 @theme inline {
   --color-intel-bg-primary: #0a0a0f;
   --color-intel-bg-secondary: #12121a;
-  --color-intel-glass: rgba(18, 18, 26, 0.7);
+  --color-intel-glass: rgba(14, 14, 22, 0.85);
   --color-intel-glass-border: rgba(255, 255, 255, 0.08);
   --color-intel-text-primary: #e4e4e7;
   --color-intel-text-secondary: #71717a;
@@ -32,11 +32,220 @@ html, body {
   overflow: hidden;
 }
 
+/* ═══════════════════════════════════════════
+   LEAFLET MAP THEME
+═══════════════════════════════════════════ */
 .leaflet-tile-pane {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  filter: brightness(0.55) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
 }
 
 .leaflet-container {
   font-family: inherit;
   background-color: #0a0a0f !important;
+}
+
+/* ═══════════════════════════════════════════
+   LEAFLET POPUP DARK THEME
+═══════════════════════════════════════════ */
+.leaflet-popup-content-wrapper {
+  background: rgba(14, 14, 22, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(59, 130, 246, 0.2) !important;
+  color: #e4e4e7 !important;
+  backdrop-filter: blur(12px);
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 220px !important;
+}
+
+.leaflet-popup-tip-container {
+  display: none !important;
+}
+
+.leaflet-popup-close-button {
+  color: #71717a !important;
+  top: 8px !important;
+  right: 10px !important;
+  font-size: 18px !important;
+  z-index: 10;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #e4e4e7 !important;
+}
+
+/* ═══════════════════════════════════════════
+   CLUSTER STYLING
+═══════════════════════════════════════════ */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border: 2px solid rgba(59, 130, 246, 0.5) !important;
+}
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  color: white !important;
+  font-weight: 700 !important;
+}
+
+/* ═══════════════════════════════════════════
+   CUSTOM SCROLLBAR
+═══════════════════════════════════════════ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.35);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.6);
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS / KEYFRAMES
+═══════════════════════════════════════════ */
+
+/* Pulsing outer glow — used on sidebar frame */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0px rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 24px rgba(59, 130, 246, 0.25), 0 0 60px rgba(59, 130, 246, 0.08); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Shimmer hover effect — for cards and dropzone */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer-hover:hover {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  background-size: 200% auto;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* Radar ping — animated ring on map markers */
+@keyframes radar-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+.radar-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: radar-ping 2s ease-out infinite;
+}
+
+/* Scanline flicker on sidebar header */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+.scanline-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 50%, rgba(59, 130, 246, 0.015) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Badge bounce */
+@keyframes badge-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+.animate-badge-bounce {
+  animation: badge-bounce 1.8s ease-in-out infinite;
+}
+
+/* Floating animation for backdrop */
+@keyframes fade-in-backdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Status dot pulse */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.status-dot {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* HUD corner accent flicker */
+@keyframes hud-flicker {
+  0%, 95%, 100% { opacity: 1; }
+  97% { opacity: 0.3; }
+}
+.hud-flicker {
+  animation: hud-flicker 5s ease-in-out infinite;
+}
+
+/* Data stream lines on intel cards */
+@keyframes data-stream {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+/* Gradient border animation */
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(59, 130, 246, 0.2); }
+  33% { border-color: rgba(16, 185, 129, 0.2); }
+  66% { border-color: rgba(239, 68, 68, 0.2); }
+}
+.animate-border-glow {
+  animation: border-glow 6s ease-in-out infinite;
+}
+
+/* Typewriter cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+  color: #3b82f6;
+  margin-left: 1px;
+}
+
+/* Leaflet zoom control */
+.leaflet-control-zoom {
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  background: rgba(14, 14, 22, 0.9) !important;
+  backdrop-filter: blur(12px);
+}
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background: transparent !important;
+  color: #e4e4e7 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #fff !important;
 }
