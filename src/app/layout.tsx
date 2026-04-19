@@ -14,23 +14,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Multi-Source Intel Dashboard",
-  description: "Visualize OSINT, HUMINT, and IMINT data.",
+  title: "Intel Fusion Dashboard — Multi-Source Intelligence",
+  description:
+    "Advanced multi-source intelligence fusion center. Visualize OSINT, HUMINT, and IMINT data across an interactive dark-themed global map.",
+  keywords: ["intelligence", "OSINT", "HUMINT", "IMINT", "geospatial", "dashboard"],
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
-        <IntelProvider>
-          {children}
-        </IntelProvider>
+        <IntelProvider>{children}</IntelProvider>
       </body>
     </html>
   );

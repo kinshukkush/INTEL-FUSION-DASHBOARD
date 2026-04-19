@@ -1,33 +1,32 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
-import { IntelData, mockIntelData } from "@/lib/mockData";
+import { IntelData, intelDataset } from "@/lib/intelData";
 
-// State structure
 export interface IntelState {
   sidebarOpen: boolean;
   flyToLocation: [number, number] | null;
   activeFilter: "ALL" | "OSINT" | "HUMINT" | "IMINT";
+  searchQuery: string;
   intelData: IntelData[];
 }
 
 const initialState: IntelState = {
-  sidebarOpen: true,
+  sidebarOpen: false,
   flyToLocation: null,
   activeFilter: "ALL",
-  intelData: mockIntelData,
+  searchQuery: "",
+  intelData: intelDataset,
 };
 
-// Actions
 export type IntelAction =
   | { type: "TOGGLE_SIDEBAR" }
   | { type: "SET_SIDEBAR"; payload: boolean }
   | { type: "FLY_TO"; payload: [number, number] | null }
   | { type: "SET_FILTER"; payload: IntelState["activeFilter"] }
+  | { type: "SET_SEARCH"; payload: string }
   | { type: "SET_DATA"; payload: IntelData[] };
 
-
-// Reducer
 function intelReducer(state: IntelState, action: IntelAction): IntelState {
   switch (action.type) {
     case "TOGGLE_SIDEBAR":
@@ -38,6 +37,8 @@ function intelReducer(state: IntelState, action: IntelAction): IntelState {
       return { ...state, flyToLocation: action.payload };
     case "SET_FILTER":
       return { ...state, activeFilter: action.payload };
+    case "SET_SEARCH":
+      return { ...state, searchQuery: action.payload };
     case "SET_DATA":
       return { ...state, intelData: action.payload };
     default:
@@ -45,7 +46,6 @@ function intelReducer(state: IntelState, action: IntelAction): IntelState {
   }
 }
 
-// Context
 export const IntelContext = createContext<{
   state: IntelState;
   dispatch: React.Dispatch<IntelAction>;
