@@ -205,8 +205,17 @@ export default function MapComponent() {
             key={item.id}
             position={[item.lat, item.lng]}
             icon={createMarker(item.type)}
+            eventHandlers={{
+              mouseover: (e) => {
+                e.target.openPopup();
+              },
+              mouseout: (e) => {
+                // Small delay so moving into the popup itself doesn't close it
+                setTimeout(() => e.target.closePopup(), 250);
+              },
+            }}
           >
-            <Popup>
+            <Popup closeButton autoPan={false}>
               <div dangerouslySetInnerHTML={{ __html: popupHTML(item) }} />
             </Popup>
           </Marker>

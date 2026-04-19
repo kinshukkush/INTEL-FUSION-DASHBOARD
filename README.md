@@ -4,7 +4,7 @@
 
 <br/>
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=3B82F6&center=true&vCenter=true&width=700&lines=🛰️+Multi-Source+Intelligence+Fusion+System;🗺️+OSINT+%7C+HUMINT+%7C+IMINT+Geo-Visualization;⚡+Live+Drag+%26+Drop+CSV+%2F+JSON+Ingestion;🏫+LPU+Campus+Intelligence+Overlay;🇮🇳+India+Regional+Coverage+Included" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=18&pause=1000&color=3B82F6&center=true&vCenter=true&width=750&lines=Multi-Source+Intelligence+Fusion+Dashboard;OSINT+%7C+HUMINT+%7C+IMINT+Geo-Visualization;MongoDB+Atlas+%2B+CSV+%2F+JSON+Live+Ingestion;Hover+Markers+%7C+Image+Upload+%7C+Dark+HUD;India+%2B+LPU+Intelligence+Coverage+%7C+Vercel+Deployed" alt="Typing SVG" />
 
 <br/><br/>
 
@@ -13,6 +13,7 @@
 <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
 <img src="https://img.shields.io/badge/Leaflet-1.9-199900?style=for-the-badge&logo=leaflet&logoColor=white" />
+<img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" />
 <img src="https://img.shields.io/badge/Framer_Motion-12-black?style=for-the-badge&logo=framer&logoColor=white" />
 <img src="https://img.shields.io/badge/GSAP-3.15-88CE02?style=for-the-badge&logo=greensock&logoColor=white" />
 
@@ -221,6 +222,58 @@ Open [http://localhost:3000](http://localhost:3000) 🚀
 npm run build
 npm run start
 ```
+
+#### 5. Set up MongoDB (Local Only)
+
+Create `.env.local` in the project root:
+
+```env
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/intel_fusion?appName=<appName>
+MONGODB_DB=intel_fusion
+```
+
+---
+
+## 🍃 MongoDB Atlas Integration
+
+This dashboard connects to a **MongoDB Atlas** database to persist, sync, and share intelligence data across sessions and devices.
+
+### Database Structure
+
+| Field | Database | Collection |
+|-------|----------|------------|
+| Intel Records | `intel_fusion` | `intel_reports` |
+
+### In-App Controls (Sidebar → MONGODB ATLAS panel)
+
+| Button | Action |
+|--------|--------|
+| **PULL** | Fetches all records from MongoDB and merges into current view |
+| **SEED** | Populates MongoDB with the built-in 25-point India+LPU dataset (skips duplicates) |
+| **PUSH** | Uploads all currently visible intel points to MongoDB |
+
+> The app **auto-syncs on load** — any records in MongoDB appear alongside the built-in dataset automatically.
+
+### Vercel Deployment — Environment Variables
+
+In your [Vercel Project Settings → Environment Variables](https://vercel.com/dashboard), add:
+
+```
+MONGODB_URI = mongodb+srv://kinshuksaxena2_db_user:***@kinshuk.uxntekq.mongodb.net/intel_fusion?appName=Kinshuk
+MONGODB_DB  = intel_fusion
+```
+
+> ⚠️ **Never commit `.env.local` to Git.** It is already in `.gitignore`.
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/intel` | Fetch all records from MongoDB |
+| `POST` | `/api/intel` | Insert one or many records |
+| `DELETE` | `/api/intel` | Clear all records |
+| `POST` | `/api/intel/seed` | Seed with built-in 25-point dataset |
+| `GET` | `/api/intel/seed` | Get current record count |
 
 ---
 

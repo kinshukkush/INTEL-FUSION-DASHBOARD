@@ -1,23 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import LoadingScreen from "@/components/LoadingScreen";
 import TopBar from "@/components/TopBar";
 import Sidebar from "@/components/Sidebar";
 import FAB from "@/components/FAB";
+import { useIntel } from "@/context/IntelContext";
 
 const MapArea = dynamic(() => import("@/components/MapArea"), { ssr: false });
+
+function DashboardWithContext() {
+  const { dispatch } = useIntel();
+
+  /** Auto-sync from MongoDB on every mount */
+  useEffect(() => {
+    const sync = async () => {
+      dispatch({ type: "SET_DB_STATUS", payload: { status: "loading" } });
+      try {
+        const res = await fetch("/api/intel");
+        const json = await res.json();
+        if (json.success && json.data?.length > 0) {
+          dispatch({ type: "APPEND_DATA", payload: json.data });
+          dispatch({
+            type: "SET_DB_STATUS",
+            payload: { status: "synced", count: json.count },
+          });
+        } else {
+          // No data in DB yet — keep mock data, set status to let user know
+          dispatch({ type: "SET_DB_STATUS", payload: { status: "synced", count: 0 } });
+        }
+      } catch {
+        dispatch({ type: "SET_DB_STATUS", payload: { status: "error" } });
+      }
+    };
+    sync();
+  }, [dispatch]);
+
+  return (
+    <>
+      <MapArea />
+      <TopBar />
+      <Sidebar />
+      <FAB />
+    </>
+  );
+}
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden" style={{ background: "#0a0a0f" }}>
-      {/* Loading screen — shown until loaded */}
+    <div
+      className="relative w-screen h-screen overflow-hidden"
+      style={{ background: "#0a0a0f" }}
+    >
       {!loaded && <LoadingScreen onComplete={() => setLoaded(true)} />}
 
-      {/* Dashboard (always mounted, just hidden behind loading screen) */}
       <div
         style={{
           position: "absolute",
@@ -27,17 +66,7 @@ export default function Home() {
           pointerEvents: loaded ? "auto" : "none",
         }}
       >
-        {/* Full-screen map */}
-        <MapArea />
-
-        {/* HUD TopBar */}
-        <TopBar />
-
-        {/* Floating sidebar panel */}
-        <Sidebar />
-
-        {/* FAB trigger */}
-        <FAB />
+        <DashboardWithContext />
       </div>
     </div>
   );
