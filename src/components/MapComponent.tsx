@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import { useIntel } from "@/context/IntelContext";
 import L from "leaflet";
 
@@ -46,7 +47,7 @@ export default function MapComponent() {
     <MapContainer
       center={[48.8566, 2.3522]}
       zoom={3}
-      className="w-full h-full z-[100]"
+      className="w-full h-full z-10"
       zoomControl={false}
     >
       <TileLayer
@@ -55,31 +56,33 @@ export default function MapComponent() {
       />
       <FlyToHandler />
       
-      {state.intelData.map((data) => (
-        <Marker 
-          key={data.id} 
-          position={[data.lat, data.lng]} 
-          icon={createCustomIcon(data.type)}
-        >
-          <Popup className="custom-popup">
-            <div className="flex flex-col gap-2 p-1 min-w-[200px]">
-              <div className="flex justify-between items-center bg-intel-bg-secondary p-2 rounded-t-md border-b border-intel-glass-border -m-1 mb-1">
-                <span className="font-bold text-sm text-intel-text-primary uppercase tracking-wider">{data.type}</span>
-                <span className="text-xs text-intel-text-secondary opacity-70">
-                  {data.lat.toFixed(2)}, {data.lng.toFixed(2)}
-                </span>
-              </div>
-              <h3 className="font-semibold text-intel-text-primary mt-1 leading-tight">{data.title}</h3>
-              {data.image && (
-                <div className="mt-1 mb-1 rounded overflow-hidden">
-                  <img src={data.image} alt={data.title} className="w-full h-24 object-cover" />
+      <MarkerClusterGroup>
+        {state.intelData.map((data) => (
+          <Marker 
+            key={data.id} 
+            position={[data.lat, data.lng]} 
+            icon={createCustomIcon(data.type)}
+          >
+            <Popup className="custom-popup">
+              <div className="flex flex-col gap-2 p-1 min-w-[200px]">
+                <div className="flex justify-between items-center bg-intel-bg-secondary p-2 rounded-t-md border-b border-intel-glass-border -m-1 mb-1">
+                  <span className="font-bold text-sm text-intel-text-primary uppercase tracking-wider">{data.type}</span>
+                  <span className="text-xs text-intel-text-secondary opacity-70">
+                    {data.lat.toFixed(2)}, {data.lng.toFixed(2)}
+                  </span>
                 </div>
-              )}
-              <p className="text-sm text-intel-text-secondary leading-snug">{data.description}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+                <h3 className="font-semibold text-intel-text-primary mt-1 leading-tight">{data.title}</h3>
+                {data.image && (
+                  <div className="mt-1 mb-1 rounded overflow-hidden">
+                    <img src={data.image} alt={data.title} className="w-full h-24 object-cover" />
+                  </div>
+                )}
+                <p className="text-sm text-intel-text-secondary leading-snug">{data.description}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 }

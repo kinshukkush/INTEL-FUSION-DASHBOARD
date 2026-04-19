@@ -50,6 +50,34 @@ The **Multi-Source Intelligence Dashboard** translates raw `JSON` and `CSV` coor
 
 ---
 
+## 👨‍💻 Developer
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
+
 <div align="center">
-  <b>Built flawlessly utilizing autonomous AI execution loops.</b>
+
+### **Kinshuk Saxena**
+
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=18&pause=1000&color=2B3990&center=true&vCenter=true&width=500&lines=Frontend+Developer;HTML+%7C+CSS+%7C+JavaScript+Enthusiast;React+Native+%7C+Expo+Builder;Music+Lover+%F0%9F%8E%B5;Always+Learning+%F0%9F%9A%80" alt="Typing SVG" />
+
+<br/>
+
+[![GitHub](https://img.shields.io/badge/GitHub-kinshukkush-181717?style=for-the-badge&logo=github)](https://github.com/kinshukkush)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-kinshuk--saxena-0077B5?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/kinshuk-saxena-/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit_Website-2B3990?style=for-the-badge&logo=google-chrome&logoColor=white)](https://portfolio-frontend-mu-snowy.vercel.app/)
+[![Email](https://img.shields.io/badge/Email-kinshuksaxena3%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:kinshuksaxena3@gmail.com)
+[![Phone](https://img.shields.io/badge/Phone-%2B91%209057538521-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](tel:+919057538521)
+
+<br/>
+
+**Made with ❤️ and 🔵 by Kinshuk Saxena**
+
+⭐ **Star this repo if you found it helpful!** ⭐
+
+<a href="https://github.com/kinshukkush">
+  <img src="https://img.shields.io/github/followers/kinshukkush?style=social" alt="GitHub Followers"/>
+</a>
+
 </div>
+
+---
