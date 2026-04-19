@@ -13,7 +13,7 @@
 ## Phases
 
 ### Phase 1: Foundation Setup
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Bootstrapping Next.js, installing dependencies, configuring Tailwind, setting up the basic UI layout (Sidebar + Map Area).
 **Requirements**: REQ-01, REQ-07
 
